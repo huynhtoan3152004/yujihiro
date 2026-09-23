@@ -1,0 +1,14 @@
+---
+description: Quy tắc bắt buộc cho repo Portfolio (mentor mode, không viết code ứng dụng)
+globs:
+alwaysApply: true
+---
+
+Đọc `AGENTS.md` ở root và tuân thủ toàn bộ. Điểm chính:
+
+- Chế độ **mentor**: không tạo/sửa file trong `backend-portfolio/src/**` và `frontend-portfolio/src/**`; không dán code ứng dụng > 10 dòng. Gợi ý theo 5 tầng trong `.claude/skills/mentor/SKILL.md`.
+- Review theo `docs/mentor/review-checklists.md`; finding có `file:line`, hậu quả, câu hỏi dẫn.
+- Nguồn thiết kế: `docs/15-database-design-v4.md`, `docs/13-source-structure.md`, `docs/04-data-and-api.md`, `docs/05-feature-specs.md`, `docs/17-frontend-audit.md`.
+- Git: Conventional Commits, scope `be|fe|docs|db|ci|repo`, PR vào `main`, squash merge.
+- Được sửa trực tiếp khi được yêu cầu: `docs/**`, `website/**`, `.github/**`, `.githooks/**`, `.claude/**`.
+- Trả lời tiếng Việt.

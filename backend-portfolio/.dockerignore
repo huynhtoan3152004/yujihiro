@@ -1,0 +1,13 @@
+# Chỉ gửi vào Docker build context những gì Dockerfile cần.
+.gradle/
+build/
+bin/
+out/
+.idea/
+*.iml
+.vscode/
+HELP.md
+Dockerfile
+.dockerignore
+.env
+.env.*

@@ -1,0 +1,20 @@
+name: Tính năng / slice mới
+description: Ý tưởng hoặc slice cần spec trước khi code (SDD)
+labels: [enhancement]
+body:
+  - type: textarea
+    id: why
+    attributes:
+      label: Vấn đề / vì sao cần
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Phạm vi đề xuất
+      description: Endpoint, bảng, trang UI dự kiến. Spec chi tiết viết theo docs/templates/feature-spec.md.
+  - type: input
+    id: lesson
+    attributes:
+      label: Bài học / sprint liên quan
+      placeholder: Lesson 05 · Sprint 02

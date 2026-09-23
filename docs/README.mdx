@@ -1,0 +1,122 @@
+---
+slug: /
+title: Tổng quan
+---
+
+# Portfolio & Learning Hub — tài liệu triển khai
+
+Baseline v3 — 22/09/2026. Bộ tài liệu thống nhất một stack và một hướng triển khai. Các đặc tả là kế hoạch; trạng thái hiện tại được ghi riêng trong tài liệu 01.
+
+<div className="flex flex-wrap gap-2 my-4">
+  <Badge>Baseline v4 · 22/09/2026</Badge>
+  <Badge variant="outline">Java 21 · Spring Boot 4.1</Badge>
+  <Badge variant="outline">React 19 · TypeScript</Badge>
+  <Badge variant="secondary">Skeleton — chưa có migration/entity</Badge>
+</div>
+
+<div className="grid gap-3 sm:grid-cols-2 my-6 not-prose">
+  <Card>
+    <CardHeader>
+      <CardTitle>Bắt đầu học</CardTitle>
+      <CardDescription>Syllabus 20 bài, mentor không viết code cho bạn</CardDescription>
+    </CardHeader>
+    <CardFooter>
+      <a href="/mentor/syllabus"><Button size="sm">Mở syllabus →</Button></a>
+    </CardFooter>
+  </Card>
+  <Card>
+    <CardHeader>
+      <CardTitle>Thiết kế database</CardTitle>
+      <CardDescription>Baseline v4 — 5 bảng MVP, UUID v7, đường mở rộng</CardDescription>
+    </CardHeader>
+    <CardFooter>
+      <a href="/database-design-v4"><Button size="sm" variant="outline">Xem tài liệu 15 →</Button></a>
+    </CardFooter>
+  </Card>
+  <Card>
+    <CardHeader>
+      <CardTitle>Một repo hay hai repo</CardTitle>
+      <CardDescription>Vì sao monorepo, và cách deploy FE/BE riêng nơi</CardDescription>
+    </CardHeader>
+    <CardFooter>
+      <a href="/repository-strategy"><Button size="sm" variant="outline">Xem tài liệu 16 →</Button></a>
+    </CardFooter>
+  </Card>
+  <Card>
+    <CardHeader>
+      <CardTitle>Quy trình Git & docs</CardTitle>
+      <CardDescription>Commit, PR, CI, merge log tự động</CardDescription>
+    </CardHeader>
+    <CardFooter>
+      <a href="/docs-workflow"><Button size="sm" variant="outline">Xem tài liệu 19 →</Button></a>
+    </CardFooter>
+  </Card>
+</div>
+
+<Alert variant="note" title="Về trang này">
+Đây là trang duy nhất trong <code>docs/</code> viết bằng <code>.mdx</code> (dùng component shadcn thật: Card, Badge, Button, Alert — đăng ký ở <code>website/src/theme/MDXComponents.tsx</code>). 19 tài liệu kỹ thuật còn lại giữ <code>.md</code> thuần vì chứa nhiều <code>{'{ }'}</code>/<code>{'<>'}</code> trong ví dụ JSON, SQL, TypeScript — ép qua MDX dễ vỡ build. Chi tiết đánh đổi ở <a href="/frontend-audit">tài liệu 17</a>.
+</Alert>
+
+## Stack đã chốt
+
+| Phần | Lựa chọn |
+|---|---|
+| Backend và các service tương lai | Java 21, Spring Boot 4.1.1, Gradle Wrapper trong backend-portfolio/ |
+| Frontend | React, TypeScript, Vite, React Router, Tailwind và các component hiện có trong frontend-portfolio/ |
+| Dữ liệu chính | PostgreSQL, Flyway, Spring Data JPA |
+| Bảo mật | Spring Security, admin session cookie và CSRF |
+| Cache và rate limit | Redis, bổ sung ở giai đoạn tối ưu |
+| RAG | Spring AI, pgvector trong PostgreSQL; Java xử lý cả API và indexing |
+| Kiểm tra và vận hành | Spring test support, Testcontainers, Docker, CI |
+
+Thư viện cụ thể và thời điểm thêm nằm trong tài liệu 11. Phiên bản backend lấy từ project hiện có; dependency của các giai đoạn sau phải kiểm tra tương thích trước khi cài.
+
+## Sản phẩm
+
+Portfolio giữ phong cách VS Code. Blog có layout đọc riêng, gồm bài kỹ thuật và hành trình cá nhân. Learning Hub liên kết roadmap → concept → pattern → problem đa nền tảng → solution → visualizer. Habit và visionboard là workspace riêng tư. Backend ban đầu dùng cấu trúc phân lớp đơn giản; vẫn có thể tách service Spring Boot khi nhu cầu thực tế xuất hiện.
+
+Một tác giả/admin; khách đọc không cần tài khoản. Tiến độ khách lưu trên trình duyệt, tiến độ luyện bài của owner lưu server. Bản đầu chưa có tài khoản người học đồng bộ đa thiết bị hoặc hệ thống chấm code.
+
+## Đọc tài liệu theo thứ tự
+
+**Baseline v4 (22/09/2026):** [thiết kế DB v4](15-database-design-v4.md) thay tài liệu 14 làm baseline schema; [chiến lược repo](16-repository-strategy.md); [audit frontend](17-frontend-audit.md); [công cụ và repo tham khảo](18-references-and-tools.md); [quy trình Git/docs/merge log](19-docs-workflow.md). Học theo [khu vực mentor](mentor/README.md).
+
+**Bắt đầu triển khai theo bản tối giản mới:** [cấu trúc folder đã tạo](13-source-structure.md) và [phân tích DB tối thiểu](14-minimal-database-design.md). Bản DB này ưu tiên hơn danh sách bảng mở rộng 04/10; chỉ tạo 4 bảng khi hoàn thiện portfolio/blog, thêm learning theo giai đoạn. Chưa tạo model hoặc migration.
+
+1. [Hiện trạng mã nguồn](01-current-state.md).
+2. [Stack và quyết định kiến trúc](02-stack-decisions.md).
+3. [Kiến trúc phân lớp và mở rộng service](03-architecture.md).
+4. [Dữ liệu và API chung](04-data-and-api.md).
+5. [Đặc tả và tiêu chí nghiệm thu](05-feature-specs.md).
+6. [RAG bằng Spring AI và pgvector](06-rag.md).
+7. [Kế hoạch học và build theo tháng](07-learning-roadmap.md).
+8. [Thiết lập project Spring hiện có](08-spring-initializr.md).
+9. [Trải nghiệm blog và Learning Hub](09-product-learning-experience.md).
+10. [Mô hình dữ liệu/API Learning Hub](10-learning-domain-api.md).
+11. [Thư viện và Redis](11-technology-adoption.md).
+12. [18 sprint và release gates](12-delivery-backlog.md).
+13. [Mẫu đặc tả](templates/feature-spec.md).
+14. [Mẫu bài học/lời giải](templates/learning-content.md).
+15. [Thiết kế database v4 — baseline schema](15-database-design-v4.md).
+16. [Một repo hay hai repo](16-repository-strategy.md).
+17. [Audit frontend: shadcn, công nghệ, chất lượng code](17-frontend-audit.md).
+18. [Graphify và repo tham khảo](18-references-and-tools.md).
+19. [Quy trình Git, PR, docs và merge log](19-docs-workflow.md).
+
+Đọc nhanh để bắt đầu: 01 → 08 → 12. Để hiểu sản phẩm: 09 → 10 → 05.
+
+## Quy trình SDD
+
+SDD là phát triển dựa trên đặc tả: xác định hành vi, dữ liệu, quyền và API trước khi code. Mỗi spec đi qua Draft → Ready → Implementing → Verified. Chỉ ghi Verified khi có bằng chứng kiểm tra.
+
+Lát cắt đầu: admin tạo project nháp → publish → FE đọc được → unpublish → URL public trả 404. Triển khai từ database đến giao diện trước khi mở module tiếp theo.
+
+## Phạm vi và thời gian
+
+Kế hoạch chuẩn khoảng 9 tháng ở mức 18 giờ/tuần, 600–800 giờ gồm học, code, nội dung và kiểm thử. Phạm vi hữu hạn: khoảng 25–35 editorial, 6 visualizers, portfolio/blog/CMS, roadmap, RAG public, habit/vision cơ bản và vận hành. Xem tài liệu 07 để điều chỉnh theo quỹ thời gian.
+
+## Nguồn tài liệu thống nhất
+
+Database.md, Porfolio.md và futureapp.md ở gốc là các trang dẫn vào bộ tài liệu này. frontend-portfolio/README.md hướng dẫn frontend; backend-portfolio/HELP.md hướng dẫn backend. Không duy trì các bản thiết kế đối lập.
+
+Thư mục Node/Prisma cũ (BE/) đã được xóa trước commit đầu tiên; backend duy nhất là `backend-portfolio/`.

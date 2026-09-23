@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==============================================================
+   VS CODE DARK THEME — CSS Custom Properties
+   Tái tạo bảng màu gốc của VS Code Dark+ Theme
+   ============================================================== */
+@layer base {
+  :root {
+    /* --- VS Code Core Colors --- */
+    --vscode-bg:           #1e1e1e;  /* Nền chính editor */
+    --vscode-sidebar-bg:   #252526;  /* Nền sidebar / explorer */
+    --vscode-activitybar-bg: #333333; /* Nền activity bar (thanh icon bên trái) */
+    --vscode-titlebar-bg:  #323233;  /* Nền title bar (thanh trên cùng) */
+    --vscode-tab-active:   #1e1e1e;  /* Tab đang mở */
+    --vscode-tab-inactive: #2d2d2d;  /* Tab không chọn */
+    --vscode-tab-border:   #252526;  /* Viền dưới tab */
+    --vscode-statusbar-bg: #007acc;  /* Thanh status bar phía dưới */
+    --vscode-panel-bg:     #1e1e1e;  /* Nền panel (terminal) */
+    --vscode-border:       #3c3c3c;  /* Viền chung */
+    --vscode-scrollbar:    #424242;  /* Thanh cuộn */
+
+    /* --- Text Colors --- */
+    --vscode-text:         #cccccc;  /* Chữ chính */
+    --vscode-text-muted:   #858585;  /* Chữ mờ */
+    --vscode-text-active:  #ffffff;  /* Chữ đang chọn */
+
+    /* --- Syntax Highlighting Colors --- */
+    --syntax-keyword:      #569cd6;  /* Từ khoá (const, let, import) */
+    --syntax-string:       #ce9178;  /* Chuỗi ký tự */
+    --syntax-number:       #b5cea8;  /* Số */
+    --syntax-function:     #dcdcaa;  /* Hàm */
+    --syntax-comment:      #6a9955;  /* Comment */
+    --syntax-type:         #4ec9b0;  /* Type / Interface */
+    --syntax-variable:     #9cdcfe;  /* Biến */
+    --syntax-operator:     #d4d4d4;  /* Toán tử */
+    --syntax-bracket:      #ffd700;  /* Ngoặc */
+    --syntax-jsx-tag:      #569cd6;  /* JSX/HTML tag */
+    --syntax-jsx-attr:     #9cdcfe;  /* JSX attributes */
+    --syntax-decorator:    #dcdcaa;  /* Decorators */
+
+    /* --- Shadcn Variables (override for VSCode theme) --- */
+    --background: 0 0% 12%;
+    --foreground: 0 0% 80%;
+    --card: 0 0% 14.5%;
+    --card-foreground: 0 0% 80%;
+    --popover: 0 0% 14.5%;
+    --popover-foreground: 0 0% 80%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 17.5%;
+    --secondary-foreground: 0 0% 80%;
+    --muted: 0 0% 17.5%;
+    --muted-foreground: 0 0% 52%;
+    --accent: 0 0% 17.5%;
+    --accent-foreground: 0 0% 80%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 23.5%;
+    --input: 0 0% 23.5%;
+    --ring: 207 90% 54%;
+    --radius: 0.25rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow: hidden; /* Toàn bộ trang không scroll — scroll chỉ trong editor panel */
+  }
+}
+
+/* ==============================================================
+   Scrollbar — Giả lập thanh cuộn kiểu VS Code
+   ============================================================== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbar);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ==============================================================
+   Selection — Highlight màu xanh khi bôi đen text
+   ============================================================== */
+::selection {
+  background-color: rgba(38, 79, 120, 0.6);
+  color: inherit;
+}

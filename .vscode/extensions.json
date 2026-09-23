@@ -1,0 +1,13 @@
+{
+  // Extension gợi ý khi mở repo trong VS Code (Cursor/Antigravity cũng đọc file này).
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack",
+    "vscjava.vscode-gradle",
+    "ms-azuretools.vscode-containers",
+    "github.vscode-github-actions"
+  ]
+}

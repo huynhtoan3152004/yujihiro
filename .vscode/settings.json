@@ -1,0 +1,10 @@
+{
+  // Ẩn thư mục cấu hình AI tool khỏi Explorer và Search. Chúng vẫn được commit
+  // để Claude Code / Cursor / Kilo đọc được rule. Muốn xem lại: đổi true → false,
+  // hoặc mở thẳng file bằng Ctrl+P (ví dụ gõ ".claude/skills/mentor").
+  "files.exclude": {
+    ".claude": true,
+    ".cursor": true,
+    ".kilo": true
+  }
+}

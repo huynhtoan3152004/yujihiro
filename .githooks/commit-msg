@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+# Kiểm tra commit message theo Conventional Commits.
+# Kích hoạt: git config core.hooksPath .githooks
+# Bỏ qua (chỉ khi thật sự cần): git commit --no-verify
+
+msg_file="$1"
+first_line=$(sed -n '1p' "$msg_file" | tr -d '\r')
+
+# Cho phép các message do git sinh ra
+case "$first_line" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;
+esac
+
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .+'
+
+if ! printf '%s\n' "$first_line" | grep -Eq "$pattern"; then
+  cat >&2 <<'EOF'
+✖ Commit message không đúng chuẩn Conventional Commits.
+
+  Định dạng:  type(scope): mô tả
+  type:       feat fix docs style refactor perf test build ci chore revert
+  scope:      be fe docs db ci repo (tùy chọn nhưng khuyến khích)
+  Ví dụ:      feat(be): add Project entity and V1 migration
+              docs: update database design v4
+              feat(be)!: change ProjectResponse shape
+
+  Xem CONTRIBUTING.md hoặc .claude/skills/git-workflow/SKILL.md
+EOF
+  exit 1
+fi
+
+if [ ${#first_line} -gt 100 ]; then
+  echo "✖ Dòng đầu commit dài hơn 100 ký tự (${#first_line})." >&2
+  exit 1
+fi
+
+exit 0

@@ -1,0 +1,169 @@
+name: Backend CI/CD
+
+# CI  — mọi PR chạm backend-portfolio/: gradle test (Testcontainers) + build thử Docker image.
+# CD  — push vào main: build image → GHCR → SSH vào VPS, `docker compose pull/up` service backend.
+#       Job deploy chỉ chạy khi biến repo BACKEND_DEPLOY = 'true' (công tắc bật/tắt deploy).
+# Secret/biến cần thiết và cách chuẩn bị VPS: docs/20-ci-cd.md
+
+on:
+  # Không lọc path ở pull_request: workflow luôn chạy để check bắt buộc không bị "Pending" mãi;
+  # job `changes` quyết định có test hay không (job bị skip vẫn tính là pass).
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'backend-portfolio/**'
+      - '.github/workflows/backend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Backend · detect changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ github.event_name != 'pull_request' || steps.filter.outputs.backend == 'true' }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            backend:
+              - 'backend-portfolio/**'
+              - '.github/workflows/backend.yml'
+
+  test:
+    name: Backend · test
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-portfolio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Test (Testcontainers dùng Docker có sẵn trên runner)
+        run: ./gradlew test
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-report
+          path: backend-portfolio/build/reports/tests/test
+          if-no-files-found: ignore
+
+  image:
+    name: Backend · Docker image
+    needs: [changes, test]
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tên image (GHCR bắt buộc chữ thường)
+        id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}-backend" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ steps.name.outputs.image }}
+          # sha-<commit đầy đủ>: tag bất biến để deploy/rollback; latest: bản mới nhất của main
+          tags: |
+            type=sha,format=long
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Build (PR) / build + push (main)
+        uses: docker/build-push-action@v6
+        with:
+          context: backend-portfolio
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+  deploy:
+    name: Backend · deploy VPS
+    needs: image
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.BACKEND_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-backend-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: read
+    env:
+      IMAGE_TAG: sha-${{ github.sha }}
+      TARGET: ${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}
+      DEPLOY_PATH: ${{ vars.VPS_DEPLOY_PATH }}
+    steps:
+      - name: Chuẩn bị SSH (key + known_hosts, không tắt kiểm tra host key)
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<'EOF'
+          Host *
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            BatchMode yes
+          EOF
+
+      - name: Đăng nhập GHCR trên VPS bằng token tạm của job
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Token đi qua stdin (không lộ trong process list) và hết hạn khi job kết thúc.
+        run: printf '%s' "$GHCR_TOKEN" | ssh "$TARGET" "docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
+
+      - name: Pull image ${{ env.IMAGE_TAG }} và khởi động lại service backend
+        # Flyway chạy migration khi Spring Boot khởi động, nên deploy = pull + up.
+        run: |
+          ssh "$TARGET" "set -e
+            cd '$DEPLOY_PATH'
+            export BACKEND_TAG='$IMAGE_TAG'
+            docker compose pull backend
+            docker logout ghcr.io
+            docker compose up -d --no-deps backend
+            docker image prune -f"
+
+      - name: Health check
+        if: vars.BACKEND_HEALTH_URL != ''
+        env:
+          URL: ${{ vars.BACKEND_HEALTH_URL }}
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "$URL" | grep -q '"status":"UP"'; then echo "Backend UP"; exit 0; fi
+            echo "Chờ backend... ($i/30)"; sleep 5
+          done
+          echo "::error::Backend không UP sau 150 giây. Xem log: docker compose logs backend" >&2
+          exit 1

@@ -1,0 +1,65 @@
+name: Merge log
+
+# Sau mỗi PR merge vào main: ghi một dòng vào docs/changelog/merge-log.md,
+# commit lại, rồi deploy docs (gọi tường minh; commit có [skip ci] nên không tự trigger lại workflow).
+#
+# main được bảo vệ bằng ruleset → GITHUB_TOKEN không push được. Dùng deploy key có quyền ghi,
+# nằm trong bypass list của ruleset, lưu ở secret MERGE_LOG_DEPLOY_KEY (docs/20-ci-cd.md mục 3).
+# Chưa có secret thì checkout dùng GITHUB_TOKEN — chỉ push được khi main chưa bị bảo vệ.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: read
+  pages: write
+  id-token: write
+
+jobs:
+  log:
+    name: Ghi merge log
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          ssh-key: ${{ secrets.MERGE_LOG_DEPLOY_KEY }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Lấy thông tin PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr view "$PR" --json number,title,author,labels,mergedAt,files,url > pr.json
+          cat pr.json
+      - name: Cập nhật docs/changelog/merge-log.md
+        run: node .github/scripts/merge-log.mjs pr.json docs/changelog/merge-log.md
+      - name: Commit
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- docs/changelog/merge-log.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git add docs/changelog/merge-log.md
+          git commit -m "docs(changelog): log merge of #${{ github.event.pull_request.number }} [skip ci]"
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  deploy-docs:
+    name: Deploy docs
+    needs: log
+    if: needs.log.result == 'success'
+    uses: ./.github/workflows/docs-deploy.yml

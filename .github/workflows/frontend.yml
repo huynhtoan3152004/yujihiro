@@ -1,0 +1,64 @@
+name: Frontend CI
+
+# CI — mọi PR chạm frontend-portfolio/: npm ci → lint → build (tsc -b + vite build).
+# CD — do Vercel Git integration đảm nhiệm (preview cho PR, production cho main).
+#      Vercel Deployment Checks chờ job "Frontend · lint + build" xanh rồi mới promote production.
+# Cấu hình Vercel: docs/20-ci-cd.md
+
+on:
+  # Không lọc path ở pull_request để check bắt buộc luôn có kết quả (job skip = pass).
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'frontend-portfolio/**'
+      - '.github/workflows/frontend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Frontend · detect changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ github.event_name != 'pull_request' || steps.filter.outputs.frontend == 'true' }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            frontend:
+              - 'frontend-portfolio/**'
+              - '.github/workflows/frontend.yml'
+
+  build:
+    name: Frontend · lint + build
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-portfolio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend-portfolio/package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck + build
+        run: npm run build

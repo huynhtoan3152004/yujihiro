@@ -1,0 +1,110 @@
+/**
+ * CSS toàn cục cho site docs — Tailwind v4 + token shadcn, tái dùng palette
+ * VS Code Dark từ frontend-portfolio/src/index.css để đồng bộ thương hiệu với app chính.
+ *
+ * Site chỉ chạy dark mode (khớp FE, xem docusaurus.config.ts colorMode).
+ * Infima (framework mặc định của Docusaurus, style navbar/sidebar/table/code
+ * block...) đọc lại đúng các biến --ifm-* bên dưới nên toàn site đồng nhất
+ * mà không cần swizzle từng component nội bộ của Docusaurus.
+ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  /* --- Token shadcn (dùng trong @theme inline bên dưới) --- */
+  --background: #1e1e1e;
+  --foreground: #cccccc;
+  --card: #252526;
+  --card-foreground: #cccccc;
+  --popover: #252526;
+  --popover-foreground: #cccccc;
+  --primary: #3fa9f5;
+  --primary-foreground: #0b1a24;
+  --secondary: #2d2d2d;
+  --secondary-foreground: #cccccc;
+  --muted: #2d2d2d;
+  --muted-foreground: #9a9a9a;
+  --accent: #37373d;
+  --accent-foreground: #ffffff;
+  --destructive: #f14c4c;
+  --destructive-foreground: #ffffff;
+  --border: #3c3c3c;
+  --input: #3c3c3c;
+  --ring: #3fa9f5;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+}
+
+/* --- Map Infima (chrome do Docusaurus tự render: navbar, sidebar, table,
+   pagination, TOC, code block...) sang đúng token ở trên. Đây là cách "shadcn
+   hoá" toàn site mà không cần swizzle/eject component nội bộ của Docusaurus. --- */
+:root,
+[data-theme='dark'] {
+  --ifm-color-primary: var(--primary);
+  --ifm-color-primary-dark: #219df3;
+  --ifm-color-primary-darker: #1297f2;
+  --ifm-color-primary-darkest: #0b7aca;
+  --ifm-color-primary-light: #63bcf7;
+  --ifm-color-primary-lighter: #7bc4f8;
+  --ifm-color-primary-lightest: #a8daf9;
+
+  --ifm-background-color: var(--background);
+  --ifm-background-surface-color: var(--card);
+  --ifm-navbar-background-color: var(--card);
+  --ifm-footer-background-color: var(--card);
+  --ifm-toc-border-color: var(--border);
+  --ifm-color-emphasis-300: var(--border);
+
+  --ifm-font-color-base: var(--foreground);
+  --ifm-font-family-base: var(--font-sans);
+  --ifm-font-family-monospace: var(--font-mono);
+  --ifm-code-font-size: 92%;
+  --ifm-heading-font-weight: 700;
+  --ifm-border-radius: var(--radius-md);
+
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  background: var(--background);
+}
+
+/* Bảng dài trong docs kỹ thuật: cuộn ngang thay vì vỡ layout. */
+.markdown table {
+  display: block;
+  overflow-x: auto;
+}
+
+/* Card/Badge/Alert của shadcn nằm trong nội dung .mdx: bỏ gạch chân link mặc
+   định của Infima khi Card/Badge được bọc trong <a>. */
+.markdown a:has(> [data-slot='card']),
+.markdown a:has(> [data-slot='badge']) {
+  text-decoration: none;
+}

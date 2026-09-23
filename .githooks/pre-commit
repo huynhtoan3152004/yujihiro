@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+# Chặn commit chứa secret/file không nên vào repo.
+# Kích hoạt: git config core.hooksPath .githooks
+
+fail=0
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+for f in $staged; do
+  case "$f" in
+    .env|*/.env|.env.*|*/.env.*)
+      case "$f" in *.env.example) ;; *) echo "✖ Không commit file env: $f" >&2; fail=1 ;; esac ;;
+    *.pem|*.key|*.p12)
+      echo "✖ Không commit khóa/chứng chỉ: $f" >&2; fail=1 ;;
+    */node_modules/*|node_modules/*|*/dist/*|*/build/*|graphify-out/*)
+      echo "✖ Không commit output build/dependency: $f" >&2; fail=1 ;;
+  esac
+
+  # File > 5 MB
+  if [ -f "$f" ]; then
+    size=$(wc -c < "$f" | tr -d ' ')
+    if [ "$size" -gt 5242880 ]; then
+      echo "✖ File lớn hơn 5 MB: $f ($size bytes). Dùng LFS hoặc để ngoài repo." >&2
+      fail=1
+    fi
+  fi
+done
+
+# Tìm chuỗi giống secret trong nội dung được stage (đơn giản, có thể false positive)
+if git diff --cached -U0 | grep -E '^\+' | grep -Ei '(AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----|password\s*[:=]\s*["'"'"'][^"'"'"']{6,})' >/dev/null; then
+  echo "✖ Phát hiện chuỗi giống secret trong nội dung stage. Kiểm tra lại; nếu là false positive, dùng --no-verify và ghi rõ trong PR." >&2
+  fail=1
+fi
+
+exit $fail

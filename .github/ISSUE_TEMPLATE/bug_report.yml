@@ -1,0 +1,33 @@
+name: Bug
+description: Hành vi sai so với spec/AC
+labels: [bug]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Phần
+      options: [backend, frontend, docs, ci/deploy]
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước tái hiện
+      placeholder: |
+        1. Mở /projects/abc
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Kỳ vọng vs thực tế
+      description: Link AC trong docs/05-feature-specs.md nếu có.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log / ảnh chụp
+      description: Không dán secret hay nội dung .env.
+      render: text

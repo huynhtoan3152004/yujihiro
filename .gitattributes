@@ -1,0 +1,20 @@
+# Chuẩn hóa line ending: LF trong repo, checkout theo OS trừ các file bắt buộc LF.
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+gradlew text eol=lf
+.githooks/* text eol=lf
+
+# Binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.jar binary
