@@ -3,7 +3,7 @@
 # Chạy local:   docker run --rm -p 8080:8080 -e SPRING_DATASOURCE_URL=... portfolio-backend
 
 # ---- Stage 1: build jar bằng Gradle Wrapper ----
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:24-jdk AS build
 WORKDIR /workspace
 
 # Copy file build trước src/ để tầng tải Gradle + dependency được cache khi chỉ code đổi.
@@ -17,7 +17,7 @@ RUN ./gradlew bootJar --no-daemon -q \
  && java -Djarmode=tools -jar app.jar extract --layers --launcher --destination extracted
 
 # ---- Stage 2: chỉ JRE + các layer của jar, chạy bằng user thường ----
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:24-jre
 RUN groupadd --system app && useradd --system --gid app --no-create-home app
 WORKDIR /app
 
